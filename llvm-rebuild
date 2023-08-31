@@ -1,0 +1,48 @@
+#!/usr/bin/env zsh
+#
+# Rebuilds and installs LLVM.
+#
+# The repo must have been built previously, with a build/ directory
+# close enough to the current sources. It may fail if the sources
+# changed significantly since last build (e.g. changing git branches,
+# or after bringing in many commits).
+#
+# USAGE:
+#  llvm-rebuild [LLVM_REPO_PATH]
+#
+# LLVM_REPO_PATH (default: /scratch/projects/llvm-project)
+#   Directory where the llvm-project sources are located. Usually
+#   a Git clone of the upstream LLVM repository.
+#   We'll be using the 'build' directory under that directory.
+#
+
+# Reset options to defaults
+emulate -L zsh
+
+set -o errexit  # Exit on failure
+
+#
+REPO_DIRPATH=${1:-/scratch/install/}
+
+echo "---- Rebuilding LLVM in repo '${REPO_DIRPATH}' ----"
+if ! [[ -d ${REPO_DIRPATH} && -d ${REPO_DIRPATH}/llvm ]]; then
+    echo "*** '${REPO_DIRPATH}' does not appear to be a LLVM repository ***" >&2
+    exit 1
+fi
+
+# Build directory must exist
+echo "-- Ensuring existing build directory --"
+BUILD_DIRPATH=${REPO_DIRPATH}/build
+if ! [[ -d ${BUILD_DIRPATH} ]]; then
+    echo "*** Missing build directory at '${BUILD_DIRPATH}'" >&2
+    exit 1
+fi
+cd ${BUILD_DIRPATH}
+
+# Build
+echo "-- Build --"
+ninja -j 10
+
+# Install
+echo "-- Install --"
+ninja install

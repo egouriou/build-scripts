@@ -1,0 +1,62 @@
+#!/usr/bin/env zsh
+#
+# Builds the Qemuproject on macOS.
+#
+# DEPENDENCIES
+#   <https://wiki.qemu.org/Hosts/Mac#Building_QEMU_for_macOS>
+#
+#    brew install libffi gettext glib pkg-config pixman ninja
+#   make (when installed through brew, make is installed as gmake, so use gmake)
+#
+# USAGE
+#   qemu-build [REPO_DIRPATH [INSTALL_DIRPATH]
+#
+# EXAMPLE
+#  /scratch/projects/recipes/qemu-build \
+#      /scratch/projects/qemu /scratch/install/qemu
+#
+
+# Reset options to defaults
+emulate -L zsh
+set -o errexit  # Exit on failure
+set -o xtrace  # Print commands ON
+
+#
+REPO_DIRPATH=${1:-/scratch/projects/qemu}
+INSTALL_DIRPATH=${2:-/scratch/install/qemu}
+
+#
+echo "---- Building Spike in repo '${REPO_DIRPATH}' ----"
+if ! [[ -d ${REPO_DIRPATH} ]]; then
+    echo "*** '${REPO_DIRPATH}' does not appear to exist ***" >&2
+    exit 1
+fi
+cd ${REPO_DIRPATH}
+
+# Create fresh build directory
+echo "-- Ensuring clean build directory --"
+
+BUILD_DIRPATH=${REPO_DIRPATH}/build
+if [[ -d ${BUILD_DIRPATH} ]]; then
+    echo "- Deleting existing build directory -"
+    rm -fr ${BUILD_DIRPATH}
+fi
+
+echo "- Creating build directory -"
+mkdir ${BUILD_DIRPATH}
+cd ${BUILD_DIRPATH}
+
+# Configure
+# TODO: more targets, linux X86-64?
+echo "-- Configure --"
+../configure \
+    --prefix=${INSTALL_DIRPATH} \
+    --target-list=riscv32-softmmu,riscv64-softmmu
+
+# Build
+echo "-- Build --"
+gmake -j 10
+
+# Install
+echo "-- Install --"
+gmake install

@@ -1,0 +1,42 @@
+#!/usr/bin/env zsh
+#
+# Builds the riscv-opcodes project on macOS.
+#
+# DEPENDENCIES
+#   brew install python3
+#   python3 -m pip install pyyaml
+#
+# USAGE
+#   riscv-opcodes-build [REPO_PATH]
+#
+# EXAMPLE
+#  /scratch/projects/recipes/riscv-opcodes-build /scratch/projects/riscv-opcodes
+#
+
+# Reset options to defaults
+emulate -L zsh
+set -o errexit  # Exit on failure
+set -o xtrace  # Print commands ON
+
+#
+REPO_DIRPATH=${1:-/scratch/projects/riscv-opcodes}
+
+#
+echo "---- Building riscvopcodes in repo '${REPO_DIRPATH}' ----"
+if ! [[ -d ${REPO_DIRPATH} ]]; then
+    echo "*** '${REPO_DIRPATH}' does not appear to exist ***" >&2
+    exit 1
+fi
+cd ${REPO_DIRPATH}
+
+# Create fresh build directory
+echo "-- Ensuring clean build --"
+make clean
+
+# Build
+echo "-- Build --"
+make
+
+# Install
+echo "-- Install --"
+make install

@@ -1,0 +1,58 @@
+#!/usr/bin/env zsh
+#
+# Runs the Zvk Proof-of-concept code, using
+#
+# DEPENDENCIES
+#   - riscv-isa-sim (Spike)
+#   - riscv-pk
+#   - riscv-gnu-toolchain
+#
+# USAGE
+#   riscv-crypto-poc-run [REPO_PATH]
+#
+# EXAMPLE
+#  /scratch/projects/recipes/riscv-crypto-poc-run /scratch/projects/riscv-crypto
+#
+
+# Reset options to defaults
+emulate -L zsh
+set -o errexit  # Exit on failure
+set -o xtrace  # Print commands ON
+
+#
+REPO_DIRPATH=${1:-/scratch/projects/riscv-crypto}
+
+#
+echo "---- Running Zvk PoC in repo '${REPO_DIRPATH}' ----"
+POC_DIRPATH=${REPO_DIRPATH}/doc/vector/code-samples
+if ! [[ -d ${POC_DIRPATH} ]]; then
+    echo "*** '${POC_DIRPATH}' directory does not exist ***" >&2
+    exit 1
+fi
+cd ${POC_DIRPATH}
+
+# Create fresh build
+echo "-- Ensuring clean build --"
+make clean
+
+# Build
+export CC=/scratch/install/llvm-project/bin/clang
+export AS=/scratch/install/llvm-project/bin/clang
+export LD=/scratch/install/llvm-project/bin/clang
+
+#TOOLCHAIN=/scratch/install/riscv-gnu-toolchain
+TOOLCHAIN=/riscv/riscv-gnu-toolchain
+
+export CFLAGS="-target riscv64-unknown-linux-gnu -march=rv64gcv_zvbb1p0_zvbc1p0_zvkg1p0_zvknc1p0_zvksc1p0 -menable-experimental-extensions --sysroot=${TOOLCHAIN}/sysroot --gcc-toolchain=${TOOLCHAIN}" # Works
+
+
+export LDFLAGS=${CFLAGS}
+
+echo "-- Build --"
+make
+
+# Run
+echo "-- Run --"
+export SPIKE=/riscv/riscv-isa-sim/bin/spike
+export PK=/riscv/riscv-pk/riscv64-unknown-linux-gnu/bin/pk
+make run-tests

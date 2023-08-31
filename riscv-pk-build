@@ -1,0 +1,62 @@
+#!/usr/bin/env zsh
+#
+# Builds the riscv-pk project on macOS, from scratch, using a clean
+# build directory, enabling rv64i.
+#
+# USAGE
+#  riscv-pk-build [REPO_PATH [INSTALL_PATH]]
+#
+# EXAMPLE
+#  /scratch/projects/recipes/riscv-pk-build /scratch/projects/riscv-pk /riscv/riscv-pk/
+#
+
+# Reset options to defaults
+emulate -L zsh
+set -o errexit  # Exit on failure
+set -o xtrace  # Print commands ON
+
+#
+REPO_DIRPATH=${1:-/scratch/projects/riscv-pk}
+INSTALL_DIRPATH=${2:-/scratch/install/riscv-pk}
+
+#
+echo "---- Building riscv-pk in repo '${REPO_DIRPATH}' ----"
+if ! [[ -d ${REPO_DIRPATH} ]]; then
+    echo "*** '${REPO_DIRPATH}' does not exist ***" >&2
+    exit 1
+fi
+
+# Create fresh build directory
+echo "-- Ensuring clean build directory --"
+
+BUILD_DIRPATH=${REPO_DIRPATH}/build
+if [[ -d ${BUILD_DIRPATH} ]]; then
+    echo "- Deleting existing build directory -"
+    rm -fr ${BUILD_DIRPATH}
+fi
+
+echo "- Creating build directory -"
+mkdir ${BUILD_DIRPATH}
+cd ${BUILD_DIRPATH}
+
+echo "-- Configure --"
+set -o xtrace  # Print commands ON
+
+# PATH setup: bring binutils (ar, ranlib) and libtool from Homebrew
+# to hide the system versions.
+export PATH="$(brew --prefix binutils)/bin:$(brew --prefix libtool)/libexec/gnubin:${PATH}"
+
+export CC=/riscv/riscv-gnu-toolchain/bin/riscv64-unknown-elf-gcc
+../configure \
+    --prefix=${INSTALL_DIRPATH} \
+    --host=riscv64-unknown-linux-gnu \
+    --with-arch=rv64gc
+set +o xtrace  # Print commands OFF
+
+
+# Build
+make -j 10
+
+# Install
+echo "-- Install into '${INSTALL_DIRPATH}' --"
+make install

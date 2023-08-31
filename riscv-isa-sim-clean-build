@@ -1,0 +1,56 @@
+#!/usr/bin/env zsh
+#
+# Builds the riscv-isa-sim (Spike) project on macOS.
+#
+# DEPENDENCIES
+#
+# USAGE
+#   riscv-isa-sim-clean-build [REPO_DIRPATH [INSTALL_DIRPATH]
+#
+# EXAMPLE
+#  /scratch/projects/recipes/riscv-isa-sim-clean-build \
+#      /scratch/projects/riscv-isa-sim /scratch/install/riscv-isa-sim
+#
+
+# Reset options to defaults
+emulate -L zsh
+set -o errexit  # Exit on failure
+set -o xtrace  # Print commands ON
+
+#
+REPO_DIRPATH=${1:-/scratch/projects/riscv-isa-sim}
+INSTALL_DIRPATH=${2:-/scratch/install/riscv-isa-sim}
+
+#
+echo "---- Building Spike in repo '${REPO_DIRPATH}' ----"
+if ! [[ -d ${REPO_DIRPATH} ]]; then
+    echo "*** '${REPO_DIRPATH}' does not appear to exist ***" >&2
+    exit 1
+fi
+cd ${REPO_DIRPATH}
+
+# Create fresh build directory
+echo "-- Ensuring clean build directory --"
+
+BUILD_DIRPATH=${REPO_DIRPATH}/build
+if [[ -d ${BUILD_DIRPATH} ]]; then
+    echo "- Deleting existing build directory -"
+    rm -fr ${BUILD_DIRPATH}
+fi
+
+echo "- Creating build directory -"
+mkdir ${BUILD_DIRPATH}
+cd ${BUILD_DIRPATH}
+
+# Configure
+echo "-- Configure --"
+../configure \
+    --prefix ${INSTALL_DIRPATH}
+
+# Build
+echo "-- Build --"
+make -j 10
+
+# Install
+echo "-- Install --"
+make install

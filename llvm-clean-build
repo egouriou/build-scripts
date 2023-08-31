@@ -1,0 +1,74 @@
+#!/usr/bin/env zsh
+#
+# Builds and installs LLVM from scratch, using a clean build directory,
+# enabling x86-64, AARCH64, RISC-V.
+#
+# USAGE:
+#  llvm-clean-build [LLVM_REPO_PATH [INSTALL_PATH]]
+#
+# LLVM_REPO_PATH (default: /scratch/projects/llvm-project)
+#   Directory where the llvm-project sources are located. Usually
+#   a Git clone of the upstream LLVM repository.
+# INSTALL_PATH (defualt: (default: /scratch/install)
+#   Installation path provided to LLVM's CMake.
+#
+
+# Reset options to defaults
+emulate -L zsh
+
+set -o errexit  # Exit on failure
+
+#
+REPO_DIRPATH=${1:-/scratch/projects/llvm-project}
+INSTALL_DIRPATH=${2:-/scratch/install/llvm-project}
+
+echo "---- Building LLVM in repo '${REPO_DIRPATH}' ----"
+if ! [[ -d ${REPO_DIRPATH} && -d ${REPO_DIRPATH}/llvm ]]; then
+    echo "*** '${REPO_DIRPATH}' does not appear to be a LLVM repository ***" >&2
+    exit 1
+fi
+
+# Create fresh build directory
+echo "-- Ensuring clean build directory --"
+
+BUILD_DIRPATH=${REPO_DIRPATH}/build
+if [[ -d ${BUILD_DIRPATH} ]]; then
+    echo "- Deleting existing build directory -"
+    rm -fr ${BUILD_DIRPATH}
+fi
+
+echo "- Creating build directory -"
+mkdir ${BUILD_DIRPATH}
+cd ${BUILD_DIRPATH}
+
+# CMake
+
+# CMake howto: <https://llvm.org/docs/CMake.html#llvm-related-variables>
+#
+# Available targets, from the page above:
+# AArch64;AMDGPU;ARM;AVR;BPF;Hexagon;Lanai;LoongArch;Mips;MSP430;NVPTX;PowerPC;RISCV;Sparc;SystemZ;VE;WebAssembly;X86;XCore
+#
+
+echo "-- CMake Configure --"
+set -o xtrace  # Print commands ON
+cmake \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DLLVM_TARGETS_TO_BUILD="AArch64;RISCV;WebAssembly;X86" \
+    -DLLVM_ENABLE_PROJECTS="clang;clang-tools-extra" \
+    -DCMAKE_INSTALL_PREFIX="${INSTALL_DIRPATH}" \
+    -DLLVM_OPTIMIZED_TABLEGEN=True \
+    -DLLVM_BUILD_TESTS=False \
+    -DLLVM_USE_SPLIT_DWARF=True \
+    -DLLVM_ENABLE_ASSERTIONS=ON \
+    -G Ninja \
+    ../llvm
+set +o xtrace  # Print commands OFF
+
+
+# Build
+echo "-- Build --"
+ninja -j 10
+
+# Install
+echo "-- Install --"
+ninja install
