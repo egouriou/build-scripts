@@ -1,0 +1,38 @@
+# ZSH file that needs to be sourced to setup the environment
+# to make use of the RISC-V GNU Toolchain in /riscv/riscv-gnu-toolchain
+
+# Concatenate two strings, insert colon separator (':') if both
+# are not empty.
+colcat () {
+    local str1=$1
+    local str2=$2
+    if [[ -n ${str1} && -n ${str2} ]]; then
+	echo "${str1}:${str2}"
+    else
+	# We know that at least one is empty, we cat concatenate
+	# without a separator in all cases.
+	echo "${str1}${str2}"
+    fi
+}
+
+do_setup () {
+    
+    local riscv=/riscv
+    local toolchain=${riscv}/riscv-gnu-toolchain
+
+    export CC=gcc-13
+    export CXX=g++-13
+
+    export PATH=$(colcat ${toolchain}/bin ${PATH})
+    export C_INCLUDE_PATH=$(colcat \
+			    "${toolchain}/sysroot/usr/include:${toolchain}/riscv64-unknown-elf/include" \
+			    ${C_INCLUDE_PATH})
+    export CPLUS_INCLUDE_PATH=$(colcat \
+				"${toolchain}/sysroot/usr/include:${toolchain}/riscv64-unknown-elf/include" \
+				${CPLUS_INCLUDE_PATH})
+    export LIBRARY_PATH=$(colcat \
+			  ${LIBRARY_PATH} \
+			  ${toolchain}/riscv64-unknown-elf/lib)
+}
+
+do_setup

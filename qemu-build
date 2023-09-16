@@ -1,6 +1,6 @@
 #!/usr/bin/env zsh
 #
-# Builds the Qemuproject on macOS.
+# Builds the QEMU project on macOS.
 #
 # DEPENDENCIES
 #   <https://wiki.qemu.org/Hosts/Mac#Building_QEMU_for_macOS>
@@ -12,7 +12,7 @@
 #   qemu-build [REPO_DIRPATH [INSTALL_DIRPATH]
 #
 # EXAMPLE
-#  /scratch/projects/recipes/qemu-build \
+#  /scratch/projects/build-scripts/qemu-build \
 #      /scratch/projects/qemu /scratch/install/qemu
 #
 

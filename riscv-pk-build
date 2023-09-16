@@ -7,7 +7,7 @@
 #  riscv-pk-build [REPO_PATH [INSTALL_PATH]]
 #
 # EXAMPLE
-#  /scratch/projects/recipes/riscv-pk-build /scratch/projects/riscv-pk /riscv/riscv-pk/
+#  /scratch/projects/build-scripts/riscv-pk-build /scratch/projects/riscv-pk /riscv/riscv-pk/
 #
 
 # Reset options to defaults

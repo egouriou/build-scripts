@@ -11,7 +11,7 @@
 #   riscv-crypto-poc-run [REPO_PATH]
 #
 # EXAMPLE
-#  /scratch/projects/recipes/riscv-crypto-poc-run /scratch/projects/riscv-crypto
+#  /scratch/projects/build-scripts/riscv-crypto-poc-run /scratch/projects/riscv-crypto
 #
 
 # Reset options to defaults

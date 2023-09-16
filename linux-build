@@ -1,0 +1,71 @@
+#!/usr/bin/env zsh
+#
+# Builds the Linux project on macOS.
+#
+# This is not meant to be a general "build Linux" script, but
+# for use with RISC-V and QEMU, based on the page "Running 64- and 32-bit
+# RISC-V Linux on QEMU" from
+# <https://risc-v-getting-started-guide.readthedocs.io/en/latest/linux-qemu.html>
+#
+# DEPENDENCIES
+#
+# USAGE
+#   linux-build [REPO_DIRPATH [INSTALL_DIRPATH]
+#
+# EXAMPLE
+#  /scratch/projects/build-scripts/linux-build \
+#      /Volumes/case-sensitive/linux /scratch/install/linux
+#
+
+# Reset options to defaults
+emulate -L zsh
+set -o errexit  # Exit on failure
+set -o xtrace  # Print commands ON
+
+#
+REPO_DIRPATH=${1:-/Volumes/case-sensitive/projects/linux}
+INSTALL_DIRPATH=${2:-/scratch/install/qemu}
+
+#
+echo "---- Building Linux in repo '${REPO_DIRPATH}' ----"
+if ! [[ -d ${REPO_DIRPATH} ]]; then
+    echo "*** '${REPO_DIRPATH}' does not appear to exist ***" >&2
+    exit 1
+fi
+cd ${REPO_DIRPATH}
+
+# TODO: figure how to move build bits to a build directory.
+#
+#  # Create fresh build directory
+#  echo "-- Ensuring clean build directory --"
+#  
+#  BUILD_DIRPATH=${REPO_DIRPATH}/build
+#  if [[ -d ${BUILD_DIRPATH} ]]; then
+#      echo "- Deleting existing build directory -"
+#      rm -fr ${BUILD_DIRPATH}
+#  fi
+#  
+#  echo "- Creating build directory -"
+#  mkdir ${BUILD_DIRPATH}
+#  cd ${BUILD_DIRPATH}
+
+# Add RISC-V GNU Toolchain bits to the path / include path / library path
+source /scratch/projects/build-scripts/toolchain-environment
+
+# Increase open fd limit.
+ulimit -n 1024
+
+
+
+
+
+#export CROSS_COMPILE=/riscv/riscv-gnu-toolchain/bin/riscv64-unknown-linux-gnu-
+
+# Configure
+echo "-- Configure --"
+#gmake ARCH=riscv CROSS_COMPILE=riscv64-unknown-linux-gnu- defconfig
+gmake ARCH=riscv CROSS_COMPILE=/riscv/riscv-gnu-toolchain/bin/riscv64-unknown-linux-gnu- defconfig
+
+# Build
+echo "-- Build --"
+gmake ARCH=riscv CROSS_COMPILE=riscv64-unknown-linux-gnu- -j 10

@@ -10,7 +10,7 @@
 #   riscv-opcodes-build [REPO_PATH]
 #
 # EXAMPLE
-#  /scratch/projects/recipes/riscv-opcodes-build /scratch/projects/riscv-opcodes
+#  /scratch/projects/build-scripts/riscv-opcodes-build /scratch/projects/riscv-opcodes
 #
 
 # Reset options to defaults

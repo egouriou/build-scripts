@@ -8,7 +8,7 @@
 #   riscv-isa-sim-clean-build [REPO_DIRPATH [INSTALL_DIRPATH]
 #
 # EXAMPLE
-#  /scratch/projects/recipes/riscv-isa-sim-clean-build \
+#  /scratch/projects/build-scripts/riscv-isa-sim-clean-build \
 #      /scratch/projects/riscv-isa-sim /scratch/install/riscv-isa-sim
 #
 
